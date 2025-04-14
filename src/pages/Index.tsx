@@ -1,12 +1,14 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import PanicButton from "@/components/PanicButton";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-panic-softBlue p-4">
+      <h1 className="text-3xl font-bold mb-12 text-panic-dark">PanicButton</h1>
+      <PanicButton />
+      <p className="mt-12 text-panic-dark text-center max-w-sm">
+        Cuando sientas ansiedad, presiona el botón para iniciar un ejercicio de respiración guiada de 3 minutos.
+      </p>
     </div>
   );
 };

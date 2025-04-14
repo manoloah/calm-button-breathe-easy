@@ -61,6 +61,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// PanicButton custom colors
+				panic: {
+					primary: '#9b87f5',
+					light: '#D6BCFA',
+					blue: '#1EAEDB',
+					softBlue: '#D3E4FD',
+					dark: '#1A1F2C',
 				}
 			},
 			borderRadius: {
