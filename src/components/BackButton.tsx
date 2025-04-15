@@ -1,4 +1,12 @@
 
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+
+interface BackButtonProps {
+  destination?: string;
+}
+
 const BackButton: React.FC<BackButtonProps> = ({ destination = "/" }) => {
   const navigate = useNavigate();
 
@@ -8,7 +16,7 @@ const BackButton: React.FC<BackButtonProps> = ({ destination = "/" }) => {
       onClick={() => navigate(destination)}
       aria-label="Go back"
     >
-      <ArrowLeft className="h-6 w-6 text-panic-accent" />
+      <ArrowLeft className="h-6 w-6 text-[#00B383]" />
     </button>
   );
 };
