@@ -64,11 +64,12 @@ export default {
 				},
 				// PanicButton custom colors
 				panic: {
-					primary: '#9b87f5',
-					light: '#D6BCFA',
-					blue: '#1EAEDB',
-					softBlue: '#D3E4FD',
-					dark: '#1A1F2C',
+					background: '#132737',
+					text: {
+						primary: '#FFFFFF',
+						secondary: '#B0B0B0',
+					},
+					accent: '#00B383',
 				}
 			},
 			borderRadius: {
@@ -97,6 +98,10 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			fontFamily: {
+				unbounded: ['Unbounded', 'sans-serif'],
+				cabin: ['Cabin', 'sans-serif'],
 			}
 		}
 	},

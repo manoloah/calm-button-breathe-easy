@@ -1,7 +1,4 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 const PanicButton = () => {
   const [isPressing, setIsPressing] = useState(false);
   const navigate = useNavigate();
@@ -15,8 +12,8 @@ const PanicButton = () => {
       className={`
         flex items-center justify-center
         rounded-full
-        bg-panic-primary
-        text-white font-bold text-xl
+        bg-panic-accent
+        text-panic-background font-unbounded font-bold text-xl
         transition-all duration-300 ease-in-out
         w-56 h-56 md:w-64 md:h-64
         shadow-lg

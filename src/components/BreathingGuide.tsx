@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -98,47 +97,45 @@ const BreathingGuide: React.FC<BreathingGuideProps> = ({ breathingDuration = 180
     <div className="flex flex-col items-center justify-center h-full gap-8">
       {breathState === "complete" ? (
         <div className="text-center animate-fade-in">
-          <h2 className="text-3xl font-bold text-panic-dark mb-4">Respiración Completada</h2>
-          <p className="text-xl text-gray-600">¿Te sientes mejor?</p>
-          <p className="text-lg text-gray-500 mt-2">Regresando a la pantalla principal...</p>
+          <h2 className="text-3xl font-unbounded text-panic-text-primary mb-4">Respiración Completada</h2>
+          <p className="text-xl font-cabin text-panic-text-secondary">¿Te sientes mejor?</p>
+          <p className="text-lg font-cabin-italic text-panic-text-secondary mt-2">Regresando a la pantalla principal...</p>
         </div>
       ) : (
         <>
           <div className="text-center mb-2">
-            <h2 className="text-3xl font-bold text-panic-dark mb-4">{getInstructionText()}</h2>
-            <p className="text-lg text-gray-500">
+            <h2 className="text-3xl font-unbounded text-panic-text-primary mb-4">{getInstructionText()}</h2>
+            <p className="text-lg font-cabin text-panic-text-secondary">
               {minutesLeft}:{secondsLeft < 10 ? `0${secondsLeft}` : secondsLeft} restantes
             </p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm font-cabin-italic text-panic-text-secondary mt-1">
               Ciclo {cycleCount + 1}
             </p>
           </div>
           
-          {/* Breathing animation circle */}
           <div 
             className={`
               w-52 h-52 md:w-60 md:h-60 rounded-full 
-              bg-panic-primary bg-opacity-30
+              bg-panic-accent bg-opacity-30
               flex items-center justify-center
               ${getAnimationState()}
             `}
           >
-            <div className="w-36 h-36 md:w-40 md:h-40 rounded-full bg-panic-primary flex items-center justify-center text-white">
+            <div className="w-36 h-36 md:w-40 md:h-40 rounded-full bg-panic-accent flex items-center justify-center text-panic-background">
               <div className="text-center">
-                <p className="text-3xl font-bold">{
+                <p className="text-3xl font-unbounded">{
                   breathState === "inhale" ? inhaleDuration - (timer % inhaleDuration) : 
                   breathState === "hold" ? holdDuration - (timer - inhaleDuration) : 
                   breathState === "exhale" ? exhaleDuration - (timer - inhaleDuration - holdDuration) : 0
                 }</p>
-                <p className="text-sm mt-1">{getInstructionText()}</p>
+                <p className="text-sm font-cabin mt-1">{getInstructionText()}</p>
               </div>
             </div>
           </div>
           
-          {/* Progress bar */}
-          <div className="w-4/5 max-w-sm bg-gray-200 rounded-full h-2.5 mt-6">
+          <div className="w-4/5 max-w-sm bg-white/10 rounded-full h-2.5 mt-6">
             <div 
-              className="bg-panic-primary h-2.5 rounded-full" 
+              className="bg-panic-accent h-2.5 rounded-full" 
               style={{ width: `${progress}%` }}
             />
           </div>
