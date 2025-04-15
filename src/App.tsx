@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import BreathworkPage from "./pages/BreathworkPage";
+import BoltPage from "./pages/BoltPage";
 import NotFound from "./pages/NotFound";
 import AuthGuard from "./components/AuthGuard";
 
@@ -33,6 +34,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <BreathworkPage />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/bolt"
+            element={
+              <AuthGuard>
+                <BoltPage />
               </AuthGuard>
             }
           />
