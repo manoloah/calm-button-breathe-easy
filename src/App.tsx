@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import BreathworkPage from "./pages/BreathworkPage";
 import BoltPage from "./pages/BoltPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import AuthGuard from "./components/AuthGuard";
 
@@ -42,6 +43,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <BoltPage />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <AuthGuard>
+                <ProfilePage />
               </AuthGuard>
             }
           />
