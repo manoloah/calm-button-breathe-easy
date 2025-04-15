@@ -27,10 +27,10 @@ const AuthPage = () => {
       if (error) throw error;
 
       toast({
-        title: isSignUp ? "Account created!" : "Welcome back!",
+        title: isSignUp ? "¡Cuenta creada!" : "¡Bienvenido de nuevo!",
         description: isSignUp 
-          ? "Please check your email to verify your account."
-          : "You have been successfully logged in.",
+          ? "Por favor, revisa tu correo electrónico para verificar tu cuenta."
+          : "Has iniciado sesión exitosamente.",
       });
 
       if (!isSignUp) navigate('/');
@@ -50,12 +50,12 @@ const AuthPage = () => {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-unbounded text-white">
-            {isSignUp ? 'Create Account' : 'Welcome Back'}
+            {isSignUp ? 'Crear Cuenta' : 'Bienvenido de Nuevo'}
           </h2>
           <p className="mt-2 text-sm text-[#B0B0B0]">
             {isSignUp 
-              ? 'Sign up to start managing your anxiety'
-              : 'Sign in to continue your journey'}
+              ? 'Regístrate para comenzar a manejar tu ansiedad'
+              : 'Inicia sesión para continuar tu viaje'}
           </p>
         </div>
 
@@ -64,7 +64,7 @@ const AuthPage = () => {
             <div>
               <Input
                 type="email"
-                placeholder="Email address"
+                placeholder="Correo electrónico"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -74,7 +74,7 @@ const AuthPage = () => {
             <div>
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -89,11 +89,11 @@ const AuthPage = () => {
             className="w-full bg-[#00B383] hover:bg-[#00956D] text-white"
           >
             {isLoading ? (
-              "Loading..."
+              "Cargando..."
             ) : isSignUp ? (
-              "Sign Up"
+              "Registrarse"
             ) : (
-              "Sign In"
+              "Iniciar Sesión"
             )}
           </Button>
 
@@ -104,8 +104,8 @@ const AuthPage = () => {
               className="text-[#B0B0B0] hover:text-white text-sm"
             >
               {isSignUp
-                ? "Already have an account? Sign in"
-                : "Need an account? Sign up"}
+                ? "¿Ya tienes una cuenta? Inicia sesión"
+                : "¿Necesitas una cuenta? Regístrate"}
             </button>
           </div>
         </form>
