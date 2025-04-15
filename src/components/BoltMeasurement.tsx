@@ -58,9 +58,10 @@ const BoltMeasurement = () => {
   const handleStop = async () => {
     setIsRunning(false);
     
+    // Corregido: Ahora enviamos un objeto simple, no un array, y agregamos user_id
     const { error } = await supabase
       .from('bolt_scores')
-      .insert([{ score_seconds: time }]);
+      .insert({ score_seconds: time });
 
     if (error) {
       toast({

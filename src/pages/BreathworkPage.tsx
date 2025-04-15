@@ -12,4 +12,4 @@ const BreathworkPage = () => {
   );
 };
 
-export default BreathingGuide;
+export default BreathworkPage;
