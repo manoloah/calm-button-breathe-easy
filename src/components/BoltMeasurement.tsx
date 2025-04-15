@@ -17,6 +17,7 @@ const BoltMeasurement = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
   const [scores, setScores] = useState<{ created_at: string; score_seconds: number; }[]>([]);
+  const [showOptions, setShowOptions] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,15 +54,21 @@ const BoltMeasurement = () => {
   const handleStart = () => {
     setTime(0);
     setIsRunning(true);
+    setShowOptions(false);
   };
 
-  const handleStop = async () => {
+  const handleStop = () => {
     setIsRunning(false);
-    
-    // Corregido: Ahora enviamos un objeto simple, no un array, y agregamos user_id
+    setShowOptions(true);
+  };
+
+  const handleSave = async () => {
     const { error } = await supabase
       .from('bolt_scores')
-      .insert({ score_seconds: time });
+      .insert({
+        score_seconds: time,
+        user_id: (await supabase.auth.getUser()).data.user?.id
+      });
 
     if (error) {
       toast({
@@ -69,13 +76,19 @@ const BoltMeasurement = () => {
         title: "Error",
         description: "No se pudo guardar tu medición.",
       });
+      console.error("Error saving score:", error);
     } else {
       toast({
         title: "¡Éxito!",
         description: `Tu puntuación BOLT es de ${time} segundos.`,
       });
       fetchScores();
+      setShowOptions(false);
     }
+  };
+
+  const handleRetry = () => {
+    handleStart();
   };
 
   const formatDate = (dateString: string) => {
@@ -97,14 +110,15 @@ const BoltMeasurement = () => {
         <div className="text-4xl font-unbounded text-white mb-4">
           {time}s
         </div>
-        {!isRunning ? (
+        
+        {!isRunning && !showOptions ? (
           <Button 
             onClick={handleStart}
             className="bg-[#00B383] hover:bg-[#00956D] text-white w-full"
           >
             Comenzar
           </Button>
-        ) : (
+        ) : isRunning ? (
           <Button 
             onClick={handleStop}
             variant="destructive"
@@ -112,6 +126,27 @@ const BoltMeasurement = () => {
           >
             Detener
           </Button>
+        ) : showOptions && (
+          <div className="flex flex-col space-y-4">
+            <div className="text-white text-lg">
+              ¿Guardar esta medición o intentar de nuevo?
+            </div>
+            <div className="flex space-x-4">
+              <Button 
+                onClick={handleRetry}
+                variant="outline" 
+                className="flex-1 border-[#B0B0B0] text-[#B0B0B0] hover:bg-white/5"
+              >
+                Repetir
+              </Button>
+              <Button 
+                onClick={handleSave}
+                className="flex-1 bg-[#00B383] hover:bg-[#00956D] text-white"
+              >
+                Guardar
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 
