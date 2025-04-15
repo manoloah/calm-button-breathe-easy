@@ -15,8 +15,8 @@ const PanicButton = () => {
       className={`
         flex items-center justify-center
         rounded-full
-        bg-white
-        text-[#B0B0B0] font-unbounded font-bold text-xl
+        bg-[#00B383]
+        text-[#132737] font-unbounded font-bold text-xl
         transition-all duration-300 ease-in-out
         w-56 h-56 md:w-64 md:h-64
         shadow-lg
