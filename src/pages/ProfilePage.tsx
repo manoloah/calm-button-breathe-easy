@@ -9,7 +9,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, User, Loader2 } from 'lucide-react';
-import Navigation from '@/components/Navigation';
+import { Settings } from 'lucide-react';
+import BottomNavigation from '@/components/BottomNavigation';
 
 interface Profile {
   username: string | null;
@@ -20,7 +21,13 @@ interface Profile {
 }
 
 const ProfilePage = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile>({
+    username: null,
+    first_name: null,
+    last_name: null,
+    date_of_birth: null,
+    avatar_url: null
+  });
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [date, setDate] = useState<Date>();
@@ -37,7 +44,14 @@ const ProfilePage = () => {
           .single();
 
         if (data) {
-          setProfile(data);
+          setProfile({
+            username: data.username,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            date_of_birth: data.date_of_birth,
+            avatar_url: data.avatar_url
+          });
+          
           if (data.date_of_birth) {
             setDate(new Date(data.date_of_birth));
           }
@@ -68,13 +82,15 @@ const ProfilePage = () => {
     }
   };
 
-  if (!profile) return null;
-
   return (
     <div className="min-h-screen bg-[#132737] text-white p-4">
-      <Navigation />
+      <div className="flex justify-end p-4">
+        <Button variant="ghost" className="text-white hover:bg-white/10">
+          <Settings className="h-6 w-6" />
+        </Button>
+      </div>
       
-      <div className="max-w-2xl mx-auto mt-20 space-y-8">
+      <div className="max-w-2xl mx-auto mt-16 space-y-8">
         <h1 className="text-3xl font-unbounded mb-8">Tu Perfil</h1>
 
         <div className="space-y-6">
@@ -209,6 +225,12 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+      
+      <div className="pb-20">
+        {/* Extra space for the bottom navigation */}
+      </div>
+      
+      <BottomNavigation />
     </div>
   );
 };
