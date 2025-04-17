@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -130,6 +131,21 @@
   100% {
     transform: scale(1.3);
     opacity: 1;
+  }
+}
+
+@keyframes calmWave {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 179, 131, 0.4);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 10px rgba(0, 179, 131, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 179, 131, 0);
   }
 }
 

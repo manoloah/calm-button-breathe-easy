@@ -20,7 +20,7 @@ const PanicButton = () => {
         transition-all duration-300 ease-in-out
         w-56 h-56 md:w-64 md:h-64
         shadow-lg
-        ${isPressing ? "scale-95 shadow-inner" : "hover:scale-105 animate-[pulse_2.5s_cubic-bezier(0.4,0,0.6,1)_infinite]"}
+        ${isPressing ? "scale-95 shadow-inner" : "hover:scale-105 animate-[calmWave_4s_ease-in-out_infinite]"}
       `}
       onMouseDown={() => setIsPressing(true)}
       onMouseUp={() => { 

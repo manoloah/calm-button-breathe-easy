@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Search, BarChart } from 'lucide-react';
+import { Trophy, BarChart } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -15,8 +15,8 @@ const BottomNavigation = () => {
           onClick={() => navigate('/journey')}
           className={`flex flex-col items-center space-y-1 ${location.pathname === '/journey' ? 'text-white' : 'text-[#999]'}`}
         >
-          <Search className="h-6 w-6" />
-          <span className="text-xs">Explorar</span>
+          <Trophy className="h-6 w-6" />
+          <span className="text-xs">Tu camino</span>
         </button>
 
         {/* Center Button - Home */}
@@ -29,10 +29,14 @@ const BottomNavigation = () => {
             ${location.pathname === '/' ? 'shadow-[0_0_15px_rgba(255,255,255,0.5)]' : ''}
           `}>
             <div className="w-14 h-14 bg-[#00B383] rounded-full flex items-center justify-center">
-              <Home className="h-7 w-7 text-white" />
+              <img 
+                src="/lovable-uploads/5c094daf-8304-48de-9c54-be2b27d56871.png" 
+                alt="Calma"
+                className="h-8 w-8" 
+              />
             </div>
           </div>
-          <span className={`text-xs ${location.pathname === '/' ? 'text-white' : 'text-[#999]'}`}>Home</span>
+          <span className={`text-xs ${location.pathname === '/' ? 'text-white' : 'text-[#999]'}`}>Calma</span>
         </button>
 
         {/* Right Button - BOLT Score */}

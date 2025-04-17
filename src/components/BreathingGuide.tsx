@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface BreathingGuideProps {
@@ -23,12 +24,39 @@ const BreathingGuide: React.FC<BreathingGuideProps> = ({ breathingDuration = 180
   const [timer, setTimer] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [cycleCount, setCycleCount] = useState(0);
+  const [audioLoaded, setAudioLoaded] = useState(false);
   const navigate = useNavigate();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   
   const inhaleDuration = 4;
   const holdDuration = 2;
   const exhaleDuration = 6;
   const cycleDuration = inhaleDuration + holdDuration + exhaleDuration;
+
+  // Initialize audio
+  useEffect(() => {
+    // Create audio element for wave sounds
+    const audio = new Audio('/lovable-uploads/ocean-waves.mp3');
+    audio.loop = true;
+    audio.volume = 0.5;
+    audioRef.current = audio;
+    
+    // Load the audio
+    audio.addEventListener('canplaythrough', () => {
+      setAudioLoaded(true);
+    });
+    
+    // Start playing when loaded
+    if (audioLoaded) {
+      audioRef.current?.play().catch(e => console.log('Audio play failed:', e));
+    }
+    
+    // Cleanup
+    return () => {
+      audio.pause();
+      audio.src = '';
+    };
+  }, [audioLoaded]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -55,6 +83,17 @@ const BreathingGuide: React.FC<BreathingGuideProps> = ({ breathingDuration = 180
         
         if (newTotalTime >= breathingDuration) {
           setBreathState("complete");
+          // Fade out audio when complete
+          if (audioRef.current) {
+            const fadeOut = setInterval(() => {
+              if (audioRef.current && audioRef.current.volume > 0.1) {
+                audioRef.current.volume -= 0.1;
+              } else {
+                clearInterval(fadeOut);
+                audioRef.current?.pause();
+              }
+            }, 200);
+          }
         }
       }, 1000);
     } else if (breathState === "complete") {
