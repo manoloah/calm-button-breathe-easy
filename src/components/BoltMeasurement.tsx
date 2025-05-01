@@ -12,12 +12,19 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
+import BoltInstructions from './BoltInstructions';
+import BreathingTutorial from './BreathingTutorial';
+import WaterCircle from './WaterCircle';
+
+type MeasurementMode = 'instructions' | 'tutorial' | 'measuring' | 'results';
 
 const BoltMeasurement = () => {
+  const [mode, setMode] = useState<MeasurementMode>('instructions');
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
   const [scores, setScores] = useState<{ created_at: string; score_seconds: number; }[]>([]);
   const [showOptions, setShowOptions] = useState(false);
+  const [fillLevel, setFillLevel] = useState(50);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -51,15 +58,33 @@ const BoltMeasurement = () => {
     }
   };
 
-  const handleStart = () => {
+  const handleStartMeasurement = () => {
+    setMode('tutorial');
+  };
+  
+  const handleStartTest = () => {
     setTime(0);
     setIsRunning(true);
+    setMode('measuring');
     setShowOptions(false);
+    
+    // Start animation for water fill
+    setFillLevel(20);
+    const fillInterval = setInterval(() => {
+      setFillLevel(prev => {
+        if (prev >= 65) {
+          clearInterval(fillInterval);
+          return 65;
+        }
+        return prev + 1;
+      });
+    }, 500);
   };
 
   const handleStop = () => {
     setIsRunning(false);
     setShowOptions(true);
+    setMode('results');
   };
 
   const handleSave = async () => {
@@ -84,74 +109,101 @@ const BoltMeasurement = () => {
       });
       fetchScores();
       setShowOptions(false);
+      setMode('instructions');
     }
   };
 
   const handleRetry = () => {
-    handleStart();
+    setMode('tutorial');
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES');
   };
-
-  return (
-    <div className="w-full max-w-md space-y-8">
-      <div className="text-center">
-        <h2 className="text-3xl font-unbounded text-white mb-4">
-          Mide tu nivel de pánico
-        </h2>
-        <p className="text-[#B0B0B0] mb-8">
-          Exhala normalmente y mantén la respiración hasta que sientas la primera necesidad de respirar.
-        </p>
-      </div>
-
-      <div className="bg-white/10 p-6 rounded-lg text-center">
-        <div className="text-4xl font-unbounded text-white mb-4">
-          {time}s
-        </div>
+  
+  const renderContent = () => {
+    switch (mode) {
+      case 'instructions':
+        return <BoltInstructions onStartMeasurement={handleStartMeasurement} />;
         
-        {!isRunning && !showOptions ? (
-          <Button 
-            onClick={handleStart}
-            className="bg-[#00B383] hover:bg-[#00956D] text-white w-full"
-          >
-            Comenzar
-          </Button>
-        ) : isRunning ? (
-          <Button 
-            onClick={handleStop}
-            variant="destructive"
-            className="w-full"
-          >
-            Detener
-          </Button>
-        ) : showOptions && (
-          <div className="flex flex-col space-y-4">
-            <div className="text-white text-lg">
-              ¿Guardar esta medición o intentar de nuevo?
+      case 'tutorial':
+        return <BreathingTutorial onComplete={handleStartTest} />;
+        
+      case 'measuring':
+        return (
+          <div className="w-full max-w-md mx-auto space-y-8 animate-fade-in">
+            <div className="text-center">
+              <h2 className="text-3xl font-unbounded text-white mb-4">
+                Detén al primer deseo de respirar
+              </h2>
+              <div className="text-5xl font-unbounded text-white mb-6">
+                {time} segundos
+              </div>
             </div>
-            <div className="flex space-x-4">
-              <Button 
-                onClick={handleRetry}
-                variant="outline" 
-                className="flex-1 border-[#B0B0B0] text-[#B0B0B0] hover:bg-white/5"
-              >
-                Repetir
-              </Button>
-              <Button 
-                onClick={handleSave}
-                className="flex-1 bg-[#00B383] hover:bg-[#00956D] text-white"
-              >
-                Guardar
-              </Button>
+            
+            <div className="relative mb-8">
+              <WaterCircle fillPercentage={fillLevel} />
+            </div>
+            
+            <Button 
+              onClick={handleStop}
+              className="bg-[#E57373] hover:bg-[#D32F2F] text-white w-full py-6 text-lg rounded-full"
+            >
+              DETENER
+            </Button>
+          </div>
+        );
+        
+      case 'results':
+        return (
+          <div className="w-full max-w-md mx-auto space-y-8 animate-fade-in">
+            <div className="text-center">
+              <h2 className="text-3xl font-unbounded text-white mb-4">
+                Tu puntuación BOLT
+              </h2>
+              <div className="text-6xl font-unbounded text-white mb-6">
+                {time} segundos
+              </div>
+            </div>
+            
+            <div className="bg-white/10 p-6 rounded-lg">
+              {showOptions && (
+                <div className="flex flex-col space-y-4">
+                  <div className="text-white text-lg text-center mb-4">
+                    ¿Guardar esta medición o intentar de nuevo?
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <Button 
+                      onClick={handleRetry}
+                      variant="outline" 
+                      className="flex-1 border-[#B0B0B0] text-[#B0B0B0] hover:bg-white/5"
+                    >
+                      Repetir
+                    </Button>
+                    <Button 
+                      onClick={handleSave}
+                      className="flex-1 bg-[#00B383] hover:bg-[#00956D] text-white"
+                    >
+                      Guardar
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
 
-      {scores.length > 0 && (
-        <div className="mt-8">
+  return (
+    <div className="space-y-8">
+      {renderContent()}
+      
+      {scores.length > 0 && mode === 'instructions' && (
+        <div className="mt-12 animate-fade-in">
           <h3 className="text-xl font-unbounded text-white mb-4">Historial</h3>
           <div className="h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
