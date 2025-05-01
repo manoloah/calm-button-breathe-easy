@@ -17,32 +17,28 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
       title: "Cálmate y respira de forma normal",
       instruction: "Toma tu tiempo para calmarte y respirar normalmente por la nariz",
       buttonText: "SIGUIENTE",
-      icon: "/lovable-uploads/6d0b6d06-83bd-49f1-a1f3-c1569c9b1eda.png" // Wave icon
+      icon: "/lovable-uploads/27ff5298-c61c-4f29-8f6c-6f6be195a651.png" // Updated wave icon
     },
     {
       title: "Inhala normal",
       instruction: "Sigue las instrucciones...",
       duration: 5,
-      fillTarget: 80,
+      fillTarget: 85,
       buttonText: null
     },
     {
       title: "Exhala normal",
       instruction: "Sigue las instrucciones...",
       duration: 5,
-      fillTarget: 20,
+      fillTarget: 15,
       buttonText: null
     },
     {
       title: "Pincha tu nariz o retén la respiración",
       instruction: "Sigue las instrucciones...",
-      buttonText: "SIGUIENTE",
-      icon: "/lovable-uploads/268d82a8-c3a3-43c0-8083-c1e4fcd837bb.png" // Hand pinching nose
-    },
-    {
-      title: "Detén al primer deseo de respirar",
-      instruction: "Segundos",
-      buttonText: "DETENER",
+      buttonText: null,
+      icon: "/lovable-uploads/23d68024-3f71-416d-b4be-c6c9cab506e4.png", // Updated nose pinching icon
+      duration: 3
     }
   ];
 
@@ -50,55 +46,78 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
     let timer: NodeJS.Timeout;
     
     if (currentStep === 1) {
-      // Inhale animation
-      setFillLevel(20);
+      // Inhale animation - 5 seconds
+      setFillLevel(15);
+      let timeElapsed = 0;
+      const stepTime = 100; // update every 100ms
+      const totalSteps = 5000 / stepTime; // 5 seconds
+      const increment = (85 - 15) / totalSteps;
+      
       timer = setInterval(() => {
+        timeElapsed += stepTime;
         setFillLevel(prev => {
-          const newValue = prev + 3;
-          if (newValue >= 80) {
+          const newValue = prev + increment;
+          if (timeElapsed >= 5000) {
             clearInterval(timer);
-            setTimeout(() => setCurrentStep(prev => prev + 1), 500);
-            return 80;
+            setTimeout(() => setCurrentStep(prev => prev + 1), 200);
+            return 85;
           }
           return newValue;
         });
+        
         setCountdown(prev => {
-          if (prev <= 1) {
-            return 0;
-          }
-          return prev - 1;
+          const newValue = 5 - Math.floor(timeElapsed / 1000);
+          return Math.max(newValue, 0);
         });
-      }, 240);
+      }, stepTime);
     }
     else if (currentStep === 2) {
-      // Exhale animation
-      setFillLevel(80);
+      // Exhale animation - 5 seconds
+      setFillLevel(85);
+      let timeElapsed = 0;
+      const stepTime = 100; // update every 100ms
+      const totalSteps = 5000 / stepTime; // 5 seconds
+      const decrement = (85 - 15) / totalSteps;
+      
       timer = setInterval(() => {
+        timeElapsed += stepTime;
         setFillLevel(prev => {
-          const newValue = prev - 3;
-          if (newValue <= 20) {
+          const newValue = prev - decrement;
+          if (timeElapsed >= 5000) {
             clearInterval(timer);
-            setTimeout(() => setCurrentStep(prev => prev + 1), 500);
-            return 20;
+            setTimeout(() => setCurrentStep(prev => prev + 1), 200);
+            return 15;
           }
           return newValue;
         });
+        
         setCountdown(prev => {
-          if (prev <= 1) {
-            return 0;
-          }
-          return prev - 1;
+          const newValue = 5 - Math.floor(timeElapsed / 1000);
+          return Math.max(newValue, 0);
         });
-      }, 240);
+      }, stepTime);
+    }
+    else if (currentStep === 3) {
+      // Hold for 3 seconds then proceed to measurement
+      timer = setTimeout(() => {
+        onComplete();
+      }, 3000);
     }
     
     return () => {
       clearInterval(timer);
+      clearTimeout(timer);
     };
-  }, [currentStep]);
+  }, [currentStep, onComplete]);
   
   useEffect(() => {
-    setCountdown(currentStep === 1 || currentStep === 2 ? 5 : 3);
+    if (currentStep === 1 || currentStep === 2) {
+      setCountdown(5); // Reset to 5 seconds for breathing steps
+    } else if (currentStep === 3) {
+      setCountdown(3); // 3 seconds for nose pinch step
+    } else {
+      setCountdown(3);
+    }
   }, [currentStep]);
   
   const handleNext = () => {
@@ -128,13 +147,6 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
             {currentStepData.instruction}
           </p>
         </div>
-      ) : currentStep === 4 ? (
-        <div className="flex flex-col items-center justify-center">
-          <div className="text-6xl md:text-8xl font-unbounded text-white my-8">
-            {countdown}
-          </div>
-          <p className="text-[#B0B0B0] text-center">{currentStepData.instruction}</p>
-        </div>
       ) : (
         <div className="flex flex-col items-center justify-center">
           <div className="relative">
@@ -150,11 +162,7 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
       {currentStepData.buttonText && (
         <Button 
           onClick={handleNext}
-          className={`${
-            currentStep === 4 
-              ? 'bg-[#E57373] hover:bg-[#D32F2F] text-white' 
-              : 'bg-[#00B383] hover:bg-[#00956D] text-white'
-          } px-10 py-6 text-lg rounded-full`}
+          className="bg-[#00B383] hover:bg-[#00956D] text-white px-10 py-6 text-lg rounded-full"
         >
           {currentStepData.buttonText}
         </Button>

@@ -14,7 +14,6 @@ import {
 } from 'recharts';
 import BoltInstructions from './BoltInstructions';
 import BreathingTutorial from './BreathingTutorial';
-import WaterCircle from './WaterCircle';
 
 type MeasurementMode = 'instructions' | 'tutorial' | 'measuring' | 'results';
 
@@ -24,7 +23,6 @@ const BoltMeasurement = () => {
   const [time, setTime] = useState(0);
   const [scores, setScores] = useState<{ created_at: string; score_seconds: number; }[]>([]);
   const [showOptions, setShowOptions] = useState(false);
-  const [fillLevel, setFillLevel] = useState(50);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -67,18 +65,6 @@ const BoltMeasurement = () => {
     setIsRunning(true);
     setMode('measuring');
     setShowOptions(false);
-    
-    // Start animation for water fill
-    setFillLevel(20);
-    const fillInterval = setInterval(() => {
-      setFillLevel(prev => {
-        if (prev >= 65) {
-          clearInterval(fillInterval);
-          return 65;
-        }
-        return prev + 1;
-      });
-    }, 500);
   };
 
   const handleStop = () => {
@@ -136,13 +122,10 @@ const BoltMeasurement = () => {
               <h2 className="text-3xl font-unbounded text-white mb-4">
                 Detén al primer deseo de respirar
               </h2>
-              <div className="text-5xl font-unbounded text-white mb-6">
-                {time} segundos
+              <div className="text-7xl font-unbounded text-white mb-6">
+                {time}
               </div>
-            </div>
-            
-            <div className="relative mb-8">
-              <WaterCircle fillPercentage={fillLevel} />
+              <p className="text-[#B0B0B0] text-lg">segundos</p>
             </div>
             
             <Button 
