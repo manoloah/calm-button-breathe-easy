@@ -8,7 +8,7 @@ interface BreathingTutorialProps {
 
 const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(5);
   
   const steps = [
     {
@@ -49,11 +49,12 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
       timer = setInterval(() => {
         timeElapsed += 1000;
         setCountdown(prev => {
+          // Only count down to 1, not 0
           const newValue = 5 - Math.floor(timeElapsed / 1000);
           if (newValue <= 0) {
             clearInterval(timer);
             setTimeout(() => setCurrentStep(prev => prev + 1), 200);
-            return 0;
+            return 1; // Set to 1 instead of 0 to avoid showing 0
           }
           return newValue;
         });
@@ -67,11 +68,12 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
       timer = setInterval(() => {
         timeElapsed += 1000;
         setCountdown(prev => {
+          // Only count down to 1, not 0
           const newValue = 5 - Math.floor(timeElapsed / 1000);
           if (newValue <= 0) {
             clearInterval(timer);
             setTimeout(() => setCurrentStep(prev => prev + 1), 200);
-            return 0;
+            return 1; // Set to 1 instead of 0 to avoid showing 0
           }
           return newValue;
         });
