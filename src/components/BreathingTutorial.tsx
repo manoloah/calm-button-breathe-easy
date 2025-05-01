@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import WaterCircle from './WaterCircle';
 
 interface BreathingTutorialProps {
   onComplete: () => void;
@@ -9,7 +8,6 @@ interface BreathingTutorialProps {
 
 const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [fillLevel, setFillLevel] = useState(50);
   const [countdown, setCountdown] = useState(3);
   
   const steps = [
@@ -17,27 +15,25 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
       title: "Cálmate y respira de forma normal",
       instruction: "Toma tu tiempo para calmarte y respirar normalmente por la nariz",
       buttonText: "SIGUIENTE",
-      icon: "/lovable-uploads/27ff5298-c61c-4f29-8f6c-6f6be195a651.png" // Updated wave icon
+      icon: "/lovable-uploads/27ff5298-c61c-4f29-8f6c-6f6be195a651.png"
     },
     {
       title: "Inhala normal",
       instruction: "Sigue las instrucciones...",
       duration: 5,
-      fillTarget: 85,
       buttonText: null
     },
     {
       title: "Exhala normal",
       instruction: "Sigue las instrucciones...",
       duration: 5,
-      fillTarget: 15,
       buttonText: null
     },
     {
       title: "Pincha tu nariz o retén la respiración",
       instruction: "Sigue las instrucciones...",
       buttonText: null,
-      icon: "/lovable-uploads/23d68024-3f71-416d-b4be-c6c9cab506e4.png", // Updated nose pinching icon
+      icon: "/lovable-uploads/23d68024-3f71-416d-b4be-c6c9cab506e4.png",
       duration: 3
     }
   ];
@@ -47,58 +43,43 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
     
     if (currentStep === 1) {
       // Inhale animation - 5 seconds
-      setFillLevel(15);
+      setCountdown(5);
       let timeElapsed = 0;
-      const stepTime = 100; // update every 100ms
-      const totalSteps = 5000 / stepTime; // 5 seconds
-      const increment = (85 - 15) / totalSteps;
       
       timer = setInterval(() => {
-        timeElapsed += stepTime;
-        setFillLevel(prev => {
-          const newValue = prev + increment;
-          if (timeElapsed >= 5000) {
+        timeElapsed += 1000;
+        setCountdown(prev => {
+          const newValue = 5 - Math.floor(timeElapsed / 1000);
+          if (newValue <= 0) {
             clearInterval(timer);
             setTimeout(() => setCurrentStep(prev => prev + 1), 200);
-            return 85;
+            return 0;
           }
           return newValue;
         });
-        
-        setCountdown(prev => {
-          const newValue = 5 - Math.floor(timeElapsed / 1000);
-          return Math.max(newValue, 0);
-        });
-      }, stepTime);
+      }, 1000);
     }
     else if (currentStep === 2) {
       // Exhale animation - 5 seconds
-      setFillLevel(85);
+      setCountdown(5);
       let timeElapsed = 0;
-      const stepTime = 100; // update every 100ms
-      const totalSteps = 5000 / stepTime; // 5 seconds
-      const decrement = (85 - 15) / totalSteps;
       
       timer = setInterval(() => {
-        timeElapsed += stepTime;
-        setFillLevel(prev => {
-          const newValue = prev - decrement;
-          if (timeElapsed >= 5000) {
+        timeElapsed += 1000;
+        setCountdown(prev => {
+          const newValue = 5 - Math.floor(timeElapsed / 1000);
+          if (newValue <= 0) {
             clearInterval(timer);
             setTimeout(() => setCurrentStep(prev => prev + 1), 200);
-            return 15;
+            return 0;
           }
           return newValue;
         });
-        
-        setCountdown(prev => {
-          const newValue = 5 - Math.floor(timeElapsed / 1000);
-          return Math.max(newValue, 0);
-        });
-      }, stepTime);
+      }, 1000);
     }
     else if (currentStep === 3) {
       // Hold for 3 seconds then proceed to measurement
+      setCountdown(3);
       timer = setTimeout(() => {
         onComplete();
       }, 3000);
@@ -110,16 +91,6 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
     };
   }, [currentStep, onComplete]);
   
-  useEffect(() => {
-    if (currentStep === 1 || currentStep === 2) {
-      setCountdown(5); // Reset to 5 seconds for breathing steps
-    } else if (currentStep === 3) {
-      setCountdown(3); // 3 seconds for nose pinch step
-    } else {
-      setCountdown(3);
-    }
-  }, [currentStep]);
-  
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -129,6 +100,13 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
   };
   
   const currentStepData = steps[currentStep];
+  
+  // Get the animation state for breathing visualization
+  const getAnimationState = () => {
+    if (currentStep === 1) return "animate-[breatheIn_5s_ease-in-out_forwards]";
+    if (currentStep === 2) return "animate-[breatheOut_5s_ease-in-out_forwards]";
+    return "";
+  };
   
   return (
     <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in">
@@ -150,9 +128,20 @@ const BreathingTutorial: React.FC<BreathingTutorialProps> = ({ onComplete }) => 
       ) : (
         <div className="flex flex-col items-center justify-center">
           <div className="relative">
-            <WaterCircle fillPercentage={fillLevel} />
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl md:text-8xl font-unbounded text-white">
-              {countdown}
+            <div 
+              className={`
+                w-52 h-52 md:w-60 md:h-60 rounded-full 
+                bg-panic-accent bg-opacity-30
+                flex items-center justify-center
+                ${getAnimationState()}
+              `}
+            >
+              <div className="w-36 h-36 md:w-40 md:h-40 rounded-full bg-panic-accent flex items-center justify-center text-panic-background">
+                <div className="text-center">
+                  <p className="text-6xl md:text-8xl font-unbounded text-white">{countdown}</p>
+                  <p className="text-sm font-cabin mt-1 text-white">{currentStep === 1 ? "Inhala" : "Exhala"}</p>
+                </div>
+              </div>
             </div>
           </div>
           <p className="text-[#B0B0B0] text-center mt-4">{currentStepData.instruction}</p>
