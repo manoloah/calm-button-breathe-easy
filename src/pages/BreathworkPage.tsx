@@ -1,46 +1,211 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import BreathingGuide from '../components/BreathingGuide';
 import BottomNavigation from '../components/BottomNavigation';
-import { useBreathPatterns, useBreathingSession } from '@/hooks/useBreathPatterns';
-import { BreathingPattern, ExpandedPattern } from '@/lib/dbTypes';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+
+// Define the breathing pattern types
+type BreathAction = "inhale" | "hold" | "exhale" | "hold-out";
+
+interface BreathStep {
+  action: BreathAction;
+  seconds: number;
+  cue?: string;
+}
+
+interface BreathPattern {
+  id: string;
+  name: string;
+  description: string;
+  category: 'equilibrio' | 'calma' | 'concentracion';
+  steps: BreathStep[];
+}
 
 const BreathworkPage = () => {
   const navigate = useNavigate();
   const [breathingDuration, setBreathingDuration] = useState(180); // Default 3 minutes (180 seconds)
+  const [activeCategory, setActiveCategory] = useState<'equilibrio' | 'calma' | 'concentracion'>('equilibrio');
   const [selectedPatternId, setSelectedPatternId] = useState<string | null>(null);
-  const { data: breathingPatterns, isLoading, error } = useBreathPatterns();
   const [exerciseStarted, setExerciseStarted] = useState(false);
+  const [currentStep, setCurrentStep] = useState<BreathStep | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [intervalId, setIntervalId] = useState<number | null>(null);
   
-  // Find the selected pattern
-  const selectedPattern = selectedPatternId 
-    ? breathingPatterns.find(p => p.id === selectedPatternId) as ExpandedPattern
-    : null;
-  
-  // Initialize breathing session hook
-  const { 
-    isActive, 
-    currentStep, 
-    secondsRemaining, 
-    totalSeconds, 
-    elapsedSeconds,
-    startSession, 
-    stopSession 
-  } = useBreathingSession(selectedPattern);
-  
-  // Set the first pattern as default when data is loaded
-  useEffect(() => {
-    if (breathingPatterns.length > 0 && !selectedPatternId) {
-      setSelectedPatternId(breathingPatterns[0].id);
-      console.log("Setting default pattern:", breathingPatterns[0].name);
+  // Predefined breathing patterns
+  const breathingPatterns: BreathPattern[] = [
+    // Equilibrio (Box Breathing)
+    {
+      id: 'equilibrio-3',
+      name: '3×3×3×3',
+      description: 'Respiración cuadrada - inhala 3s, retén 3s, exhala 3s, retén 3s',
+      category: 'equilibrio',
+      steps: [
+        { action: 'inhale', seconds: 3, cue: 'Inhala por la nariz' },
+        { action: 'hold', seconds: 3, cue: 'Retén el aire' },
+        { action: 'exhale', seconds: 3, cue: 'Exhala por la boca' },
+        { action: 'hold-out', seconds: 3, cue: 'Mantén los pulmones vacíos' }
+      ]
+    },
+    {
+      id: 'equilibrio-4',
+      name: '4×4×4×4',
+      description: 'Respiración cuadrada - inhala 4s, retén 4s, exhala 4s, retén 4s',
+      category: 'equilibrio',
+      steps: [
+        { action: 'inhale', seconds: 4, cue: 'Inhala por la nariz' },
+        { action: 'hold', seconds: 4, cue: 'Retén el aire' },
+        { action: 'exhale', seconds: 4, cue: 'Exhala por la boca' },
+        { action: 'hold-out', seconds: 4, cue: 'Mantén los pulmones vacíos' }
+      ]
+    },
+    {
+      id: 'equilibrio-5',
+      name: '5×5×5×5',
+      description: 'Respiración cuadrada - inhala 5s, retén 5s, exhala 5s, retén 5s',
+      category: 'equilibrio',
+      steps: [
+        { action: 'inhale', seconds: 5, cue: 'Inhala por la nariz' },
+        { action: 'hold', seconds: 5, cue: 'Retén el aire' },
+        { action: 'exhale', seconds: 5, cue: 'Exhala por la boca' },
+        { action: 'hold-out', seconds: 5, cue: 'Mantén los pulmones vacíos' }
+      ]
+    },
+    {
+      id: 'equilibrio-6',
+      name: '6×6×6×6',
+      description: 'Respiración cuadrada - inhala 6s, retén 6s, exhala 6s, retén 6s',
+      category: 'equilibrio',
+      steps: [
+        { action: 'inhale', seconds: 6, cue: 'Inhala por la nariz' },
+        { action: 'hold', seconds: 6, cue: 'Retén el aire' },
+        { action: 'exhale', seconds: 6, cue: 'Exhala por la boca' },
+        { action: 'hold-out', seconds: 6, cue: 'Mantén los pulmones vacíos' }
+      ]
+    },
+    
+    // Calma (No hold breathing)
+    {
+      id: 'calma-3-3',
+      name: '3-3',
+      description: 'Respiración calmante - inhala 3s, exhala 3s',
+      category: 'calma',
+      steps: [
+        { action: 'inhale', seconds: 3, cue: 'Inhala lentamente' },
+        { action: 'exhale', seconds: 3, cue: 'Exhala completamente' }
+      ]
+    },
+    {
+      id: 'calma-4-4',
+      name: '4-4',
+      description: 'Respiración calmante - inhala 4s, exhala 4s',
+      category: 'calma',
+      steps: [
+        { action: 'inhale', seconds: 4, cue: 'Inhala lentamente' },
+        { action: 'exhale', seconds: 4, cue: 'Exhala completamente' }
+      ]
+    },
+    {
+      id: 'calma-4-6',
+      name: '4-6',
+      description: 'Respiración calmante - inhala 4s, exhala 6s',
+      category: 'calma',
+      steps: [
+        { action: 'inhale', seconds: 4, cue: 'Inhala lentamente' },
+        { action: 'exhale', seconds: 6, cue: 'Exhala completamente' }
+      ]
+    },
+    {
+      id: 'calma-3-7',
+      name: '3-7',
+      description: 'Respiración calmante - inhala 3s, exhala 7s',
+      category: 'calma',
+      steps: [
+        { action: 'inhale', seconds: 3, cue: 'Inhala lentamente' },
+        { action: 'exhale', seconds: 7, cue: 'Exhala completamente' }
+      ]
+    },
+    
+    // Concentración
+    {
+      id: 'concentracion-4-0-4-4',
+      name: '4-0-4-4',
+      description: 'Mejora la concentración - inhala 4s, exhala 4s, retén 4s',
+      category: 'concentracion',
+      steps: [
+        { action: 'inhale', seconds: 4, cue: 'Inhala profundamente' },
+        { action: 'exhale', seconds: 4, cue: 'Exhala completamente' },
+        { action: 'hold-out', seconds: 4, cue: 'Mantén los pulmones vacíos' }
+      ]
+    },
+    {
+      id: 'concentracion-4-0-4-6',
+      name: '4-0-4-6',
+      description: 'Mejora la concentración - inhala 4s, exhala 4s, retén 6s',
+      category: 'concentracion',
+      steps: [
+        { action: 'inhale', seconds: 4, cue: 'Inhala profundamente' },
+        { action: 'exhale', seconds: 4, cue: 'Exhala completamente' },
+        { action: 'hold-out', seconds: 6, cue: 'Mantén los pulmones vacíos' }
+      ]
+    },
+    {
+      id: 'concentracion-4-0-4-7',
+      name: '4-0-4-7',
+      description: 'Mejora la concentración - inhala 4s, exhala 4s, retén 7s',
+      category: 'concentracion',
+      steps: [
+        { action: 'inhale', seconds: 4, cue: 'Inhala profundamente' },
+        { action: 'exhale', seconds: 4, cue: 'Exhala completamente' },
+        { action: 'hold-out', seconds: 7, cue: 'Mantén los pulmones vacíos' }
+      ]
+    },
+    {
+      id: 'concentracion-5-0-5-5',
+      name: '5-0-5-5',
+      description: 'Mejora la concentración - inhala 5s, exhala 5s, retén 5s',
+      category: 'concentracion',
+      steps: [
+        { action: 'inhale', seconds: 5, cue: 'Inhala profundamente' },
+        { action: 'exhale', seconds: 5, cue: 'Exhala completamente' },
+        { action: 'hold-out', seconds: 5, cue: 'Mantén los pulmones vacíos' }
+      ]
     }
-  }, [breathingPatterns, selectedPatternId]);
+  ];
 
+  // Filter patterns by selected category
+  const filteredPatterns = breathingPatterns.filter(pattern => pattern.category === activeCategory);
+  
+  // Get the selected pattern
+  const selectedPattern = selectedPatternId 
+    ? breathingPatterns.find(p => p.id === selectedPatternId) 
+    : null;
+
+  // Format time helper function
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
+
+  // Duration options
   const durationOptions = [
     { label: '1min', value: 60 },
     { label: '2min', value: 120 },
@@ -56,10 +221,31 @@ const BreathworkPage = () => {
   const handlePatternChange = (value: string) => {
     setSelectedPatternId(value);
     console.log("Selected pattern ID:", value);
-    const pattern = breathingPatterns.find(p => p.id === value);
-    console.log("Selected pattern:", pattern?.name);
   };
   
+  const handleCategoryChange = (category: 'equilibrio' | 'calma' | 'concentracion') => {
+    setActiveCategory(category);
+    setSelectedPatternId(null); // Reset selected pattern when changing category
+  };
+
+  // Function to move to the next step in the breathing cycle
+  const moveToNextStep = () => {
+    if (!selectedPattern) return;
+    
+    let currentIndex = 0;
+    if (currentStep) {
+      const stepIndex = selectedPattern.steps.findIndex(
+        step => step.action === currentStep.action && step.seconds === currentStep.seconds
+      );
+      currentIndex = (stepIndex + 1) % selectedPattern.steps.length;
+    }
+    
+    const nextStep = selectedPattern.steps[currentIndex];
+    setCurrentStep(nextStep);
+    setSecondsRemaining(nextStep.seconds);
+  };
+  
+  // Handle starting the breathing exercise
   const handleStartExercise = () => {
     if (!selectedPattern) {
       console.error("No breathing pattern selected!");
@@ -67,21 +253,48 @@ const BreathworkPage = () => {
     }
     
     console.log("Starting exercise with pattern:", selectedPattern.name);
-    console.log("Pattern steps:", selectedPattern.steps);
     
     setExerciseStarted(true);
-    startSession(0); // Start from the first step
+    setIsActive(true);
+    setElapsedSeconds(0);
+    
+    // Start with the first step
+    const firstStep = selectedPattern.steps[0];
+    setCurrentStep(firstStep);
+    setSecondsRemaining(firstStep.seconds);
+    
+    // Set up interval for the timer
+    const id = setInterval(() => {
+      setSecondsRemaining(prev => {
+        if (prev <= 1) {
+          moveToNextStep();
+          return 0; // Will be reset by moveToNextStep
+        }
+        return prev - 1;
+      });
+      
+      setElapsedSeconds(prev => {
+        const newElapsed = prev + 1;
+        if (newElapsed >= breathingDuration) {
+          handleStopExercise();
+        }
+        return newElapsed;
+      });
+    }, 1000) as unknown as number;
+    
+    setIntervalId(id);
   };
   
+  // Handle stopping the breathing exercise
   const handleStopExercise = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+    
     setExerciseStarted(false);
-    stopSession();
-  };
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    setIsActive(false);
+    setCurrentStep(null);
+    setIntervalId(null);
   };
   
   return (
@@ -105,12 +318,11 @@ const BreathworkPage = () => {
         {exerciseStarted ? (
           <div className="w-full flex flex-col items-center">
             <BreathingGuide 
-              breathingDuration={breathingDuration}
               currentStep={currentStep}
               secondsRemaining={secondsRemaining}
               isActive={isActive}
               totalTime={elapsedSeconds}
-              maxTime={totalSeconds > 0 ? totalSeconds : breathingDuration}
+              maxTime={breathingDuration}
               onComplete={handleStopExercise}
             />
             
@@ -124,16 +336,54 @@ const BreathworkPage = () => {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center">
+            {/* Category Selection */}
+            <div className="mb-8 w-full max-w-xs px-4">
+              <h3 className="text-sm text-[#B0B0B0] mb-2">MODO:</h3>
+              <ToggleGroup 
+                type="single" 
+                value={activeCategory} 
+                onValueChange={(value) => {
+                  if (value) handleCategoryChange(value as 'equilibrio' | 'calma' | 'concentracion');
+                }}
+                className="justify-start"
+              >
+                <ToggleGroupItem 
+                  value="equilibrio"
+                  className={`px-3 rounded-full border border-[#00B383] 
+                    ${activeCategory === 'equilibrio' ? 'bg-[#00B383] text-white' : 'bg-transparent text-white'}`}
+                >
+                  Equilibrio
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="calma"
+                  className={`px-3 rounded-full border border-[#00B383] 
+                    ${activeCategory === 'calma' ? 'bg-[#00B383] text-white' : 'bg-transparent text-white'}`}
+                >
+                  Calma
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="concentracion"
+                  className={`px-3 rounded-full border border-[#00B383] 
+                    ${activeCategory === 'concentracion' ? 'bg-[#00B383] text-white' : 'bg-transparent text-white'}`}
+                >
+                  Concentración
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            
             <div 
               className={`
                 w-52 h-52 md:w-60 md:h-60 rounded-full 
                 bg-panic-accent flex items-center justify-center
                 mb-6 cursor-pointer transition-transform hover:scale-105
+                ${!selectedPatternId ? 'opacity-50 pointer-events-none' : ''}
               `}
-              onClick={handleStartExercise}
+              onClick={selectedPatternId ? handleStartExercise : undefined}
             >
               <div className="text-center px-4">
-                <p className="text-xl font-unbounded text-white">Presiona para comenzar</p>
+                <p className="text-xl font-unbounded text-white">
+                  {selectedPatternId ? 'Presiona para comenzar' : 'Selecciona un ejercicio'}
+                </p>
               </div>
             </div>
             
@@ -141,26 +391,20 @@ const BreathworkPage = () => {
               {formatTime(breathingDuration)}
             </h2>
             
-            {/* Exercise type selection */}
+            {/* Pattern Selection */}
             <div className="mt-8 w-full max-w-xs px-4">
-              <h3 className="text-sm text-[#B0B0B0] mb-2">OBJETIVOS:</h3>
+              <h3 className="text-sm text-[#B0B0B0] mb-2">EJERCICIO:</h3>
               
               <Select onValueChange={handlePatternChange} value={selectedPatternId || undefined}>
                 <SelectTrigger className="bg-transparent border-[#00B383] text-white">
                   <SelectValue placeholder="Seleccionar ejercicio" />
                 </SelectTrigger>
                 <SelectContent>
-                  {isLoading ? (
-                    <SelectItem value="loading">Cargando...</SelectItem>
-                  ) : error ? (
-                    <SelectItem value="error">Error al cargar ejercicios</SelectItem>
-                  ) : (
-                    breathingPatterns.map((pattern) => (
-                      <SelectItem key={pattern.id} value={pattern.id}>
-                        {pattern.name}
-                      </SelectItem>
-                    ))
-                  )}
+                  {filteredPatterns.map((pattern) => (
+                    <SelectItem key={pattern.id} value={pattern.id}>
+                      {pattern.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               
