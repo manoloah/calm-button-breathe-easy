@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import BreathingGuide from '../components/BreathingGuide';
 import BottomNavigation from '../components/BottomNavigation';
-import { useBreathPatterns } from '@/hooks/useBreathPatterns';
-import { BreathingPattern } from '@/lib/dbTypes';
+import { useBreathPatterns, useBreathingSession } from '@/hooks/useBreathPatterns';
+import { BreathingPattern, ExpandedPattern } from '@/lib/dbTypes';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 const BreathworkPage = () => {
@@ -15,6 +15,23 @@ const BreathworkPage = () => {
   const [breathingDuration, setBreathingDuration] = useState(180); // Default 3 minutes (180 seconds)
   const [selectedPatternId, setSelectedPatternId] = useState<string | null>(null);
   const { data: breathingPatterns, isLoading, error } = useBreathPatterns();
+  const [exerciseStarted, setExerciseStarted] = useState(false);
+  
+  // Find the selected pattern
+  const selectedPattern = selectedPatternId 
+    ? breathingPatterns.find(p => p.id === selectedPatternId) as ExpandedPattern
+    : null;
+  
+  // Initialize breathing session hook
+  const { 
+    isActive, 
+    currentStep, 
+    secondsRemaining, 
+    totalSeconds, 
+    elapsedSeconds,
+    startSession, 
+    stopSession 
+  } = useBreathingSession(selectedPattern);
   
   // Set the first pattern as default when data is loaded
   useEffect(() => {
@@ -39,9 +56,15 @@ const BreathworkPage = () => {
     setSelectedPatternId(value);
   };
   
-  const selectedPattern = selectedPatternId 
-    ? breathingPatterns.find(p => p.id === selectedPatternId) as BreathingPattern
-    : null;
+  const handleStartExercise = () => {
+    setExerciseStarted(true);
+    startSession();
+  };
+  
+  const handleStopExercise = () => {
+    setExerciseStarted(false);
+    stopSession();
+  };
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -66,17 +89,36 @@ const BreathworkPage = () => {
           PanicButton
         </h1>
         
-        {/* Only show BreathingGuide when no pattern is selected or loading */}
-        {(!selectedPattern || isLoading) ? (
-          <BreathingGuide breathingDuration={breathingDuration} />
+        {/* Show BreathingGuide when exercise has started */}
+        {exerciseStarted ? (
+          <div className="w-full flex flex-col items-center">
+            <BreathingGuide 
+              breathingDuration={breathingDuration}
+              currentStep={currentStep}
+              secondsRemaining={secondsRemaining}
+              isActive={isActive}
+              totalTime={elapsedSeconds}
+              maxTime={totalSeconds > 0 ? totalSeconds : breathingDuration}
+              onComplete={handleStopExercise}
+            />
+            
+            <Button 
+              variant="outline" 
+              className="mt-8 border-[#00B383] text-white hover:bg-[#00B383]/20"
+              onClick={handleStopExercise}
+            >
+              Terminar ejercicio
+            </Button>
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center">
             <div 
               className={`
                 w-52 h-52 md:w-60 md:h-60 rounded-full 
                 bg-panic-accent flex items-center justify-center
-                mb-6
+                mb-6 cursor-pointer transition-transform hover:scale-105
               `}
+              onClick={handleStartExercise}
             >
               <div className="text-center px-4">
                 <p className="text-xl font-unbounded text-white">Presiona para comenzar</p>
