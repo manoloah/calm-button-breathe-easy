@@ -30,6 +30,169 @@ export type Database = {
         }
         Relationships: []
       }
+      breathing_goals: {
+        Row: {
+          description: string | null
+          display_name: string
+          id: string
+          slug: string
+        }
+        Insert: {
+          description?: string | null
+          display_name: string
+          id?: string
+          slug: string
+        }
+        Update: {
+          description?: string | null
+          display_name?: string
+          id?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      breathing_pattern_status: {
+        Row: {
+          last_run: string | null
+          pattern_id: string
+          total_runs: number | null
+          user_id: string
+        }
+        Insert: {
+          last_run?: string | null
+          pattern_id: string
+          total_runs?: number | null
+          user_id: string
+        }
+        Update: {
+          last_run?: string | null
+          pattern_id?: string
+          total_runs?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breathing_pattern_status_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "breathing_patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      breathing_pattern_steps: {
+        Row: {
+          pattern_id: string
+          position: number
+          repetitions: number | null
+          step_id: string | null
+        }
+        Insert: {
+          pattern_id: string
+          position: number
+          repetitions?: number | null
+          step_id?: string | null
+        }
+        Update: {
+          pattern_id?: string
+          position?: number
+          repetitions?: number | null
+          step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pattern_steps_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "breathing_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pattern_steps_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "breathing_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      breathing_patterns: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          cycle_secs: number | null
+          description: string | null
+          goal_id: string | null
+          id: string
+          name: string
+          recommended_minutes: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          cycle_secs?: number | null
+          description?: string | null
+          goal_id?: string | null
+          id?: string
+          name: string
+          recommended_minutes?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          cycle_secs?: number | null
+          description?: string | null
+          goal_id?: string | null
+          id?: string
+          name?: string
+          recommended_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patterns_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "breathing_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      breathing_steps: {
+        Row: {
+          created_at: string | null
+          cue_text: string | null
+          exhale_method: string
+          exhale_secs: number
+          hold_in_secs: number
+          hold_out_secs: number
+          id: string
+          inhale_method: string
+          inhale_secs: number
+        }
+        Insert: {
+          created_at?: string | null
+          cue_text?: string | null
+          exhale_method: string
+          exhale_secs: number
+          hold_in_secs: number
+          hold_out_secs: number
+          id?: string
+          inhale_method: string
+          inhale_secs: number
+        }
+        Update: {
+          created_at?: string | null
+          cue_text?: string | null
+          exhale_method?: string
+          exhale_secs?: number
+          hold_in_secs?: number
+          hold_out_secs?: number
+          id?: string
+          inhale_method?: string
+          inhale_secs?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -63,12 +226,121 @@ export type Database = {
         }
         Relationships: []
       }
+      routine_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          pattern_id: string | null
+          position: number
+          routine_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          pattern_id?: string | null
+          position: number
+          routine_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          pattern_id?: string | null
+          position?: number
+          routine_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routine_items_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "breathing_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_items_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routines: {
+        Row: {
+          created_at: string | null
+          goal_id: string | null
+          id: string
+          name: string
+          recommended_minutes: number | null
+          total_minutes: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          name: string
+          recommended_minutes?: number | null
+          total_minutes?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          name?: string
+          recommended_minutes?: number | null
+          total_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routines_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "breathing_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_routine_status: {
+        Row: {
+          completed_count: number | null
+          last_completed_at: string | null
+          routine_id: string
+          total_minutes: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_count?: number | null
+          last_completed_at?: string | null
+          routine_id: string
+          total_minutes?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_count?: number | null
+          last_completed_at?: string | null
+          routine_id?: string
+          total_minutes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_routine_status_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_total_runs: {
+        Args: { p_routine_id: string; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

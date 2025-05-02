@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 interface BreathingGuideProps {
   breathingDuration?: number; // in seconds
+  patternId?: string;
 }
 
 type BreathState = "inhale" | "hold" | "exhale" | "complete";
