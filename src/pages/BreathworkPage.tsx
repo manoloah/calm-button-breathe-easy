@@ -58,7 +58,7 @@ const BreathworkPage = () => {
   
   const handleStartExercise = () => {
     setExerciseStarted(true);
-    startSession();
+    startSession(0); // Start from the first step
   };
   
   const handleStopExercise = () => {
