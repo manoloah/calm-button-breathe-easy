@@ -37,6 +37,7 @@ const BreathworkPage = () => {
   useEffect(() => {
     if (breathingPatterns.length > 0 && !selectedPatternId) {
       setSelectedPatternId(breathingPatterns[0].id);
+      console.log("Setting default pattern:", breathingPatterns[0].name);
     }
   }, [breathingPatterns, selectedPatternId]);
 
@@ -54,9 +55,20 @@ const BreathworkPage = () => {
   
   const handlePatternChange = (value: string) => {
     setSelectedPatternId(value);
+    console.log("Selected pattern ID:", value);
+    const pattern = breathingPatterns.find(p => p.id === value);
+    console.log("Selected pattern:", pattern?.name);
   };
   
   const handleStartExercise = () => {
+    if (!selectedPattern) {
+      console.error("No breathing pattern selected!");
+      return;
+    }
+    
+    console.log("Starting exercise with pattern:", selectedPattern.name);
+    console.log("Pattern steps:", selectedPattern.steps);
+    
     setExerciseStarted(true);
     startSession(0); // Start from the first step
   };
@@ -151,6 +163,12 @@ const BreathworkPage = () => {
                   )}
                 </SelectContent>
               </Select>
+              
+              {selectedPattern && (
+                <p className="text-sm text-[#B0B0B0] mt-2 italic">
+                  {selectedPattern.description}
+                </p>
+              )}
               
               {/* Duration selection */}
               <div className="mt-6">

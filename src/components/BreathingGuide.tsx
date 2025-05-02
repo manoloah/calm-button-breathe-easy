@@ -142,6 +142,7 @@ const BreathingGuide: React.FC<BreathingGuideProps> = ({
   // Detect completion via pattern mode
   useEffect(() => {
     if (usingPatternMode && !isActive && totalTime > 0) {
+      console.log("Pattern mode complete detected");
       // Fade out audio when complete
       if (audioRef.current) {
         const fadeOut = setInterval(() => {
@@ -172,10 +173,18 @@ const BreathingGuide: React.FC<BreathingGuideProps> = ({
   const getAnimationState = () => {
     if (usingPatternMode) {
       if (!currentStep) return "";
-      if (currentStep.action === "inhale") return "animate-[breatheIn_4s_ease-in-out_forwards]";
-      if (currentStep.action === "hold") return "animate-[hold_2s_ease-in-out_forwards]";
-      if (currentStep.action === "exhale") return "animate-[breatheOut_6s_ease-in-out_forwards]";
-      if (currentStep.action === "hold-out") return "animate-[hold_2s_ease-in-out_forwards]";
+      
+      // Calculate dynamic animation duration based on seconds remaining
+      const duration = currentStep.seconds;
+      
+      if (currentStep.action === "inhale") 
+        return `animate-[breatheIn_${duration}s_ease-in-out_forwards]`;
+      if (currentStep.action === "hold") 
+        return `animate-[hold_${duration}s_ease-in-out_forwards]`;
+      if (currentStep.action === "exhale") 
+        return `animate-[breatheOut_${duration}s_ease-in-out_forwards]`;
+      if (currentStep.action === "hold-out") 
+        return `animate-[hold_${duration}s_ease-in-out_forwards]`;
       return "";
     } else {
       if (breathState === "inhale") return "animate-[breatheIn_4s_ease-in-out_forwards]";
@@ -224,6 +233,14 @@ const BreathingGuide: React.FC<BreathingGuideProps> = ({
   
   // Check if completed
   const isCompleted = usingPatternMode ? (!isActive && totalTime > 0) : (breathState === "complete");
+
+  console.log("BreathingGuide rendering:", {
+    usingPatternMode,
+    currentStep: currentStep?.action,
+    secondsRemaining,
+    isActive,
+    animationState: getAnimationState()
+  });
   
   return (
     <div className="flex flex-col items-center justify-center h-full gap-8">

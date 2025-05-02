@@ -50,10 +50,16 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
 
   // Prepare step queue when pattern changes
   useEffect(() => {
-    if (!pattern || !pattern.steps) return;
+    if (!pattern || !pattern.steps || pattern.steps.length === 0) {
+      return;
+    }
+    
+    console.log("Pattern in useBreathingSession:", pattern.name);
+    console.log("Pattern steps:", pattern.steps);
     
     // Calculate total seconds for the session based on pattern
     let seconds = 0;
+    
     pattern.steps.forEach(patternStep => {
       if (!patternStep.step) return;
       
@@ -68,12 +74,18 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
       seconds += stepDuration * reps;
     });
     
+    console.log("Total calculated seconds:", seconds);
     setTotalSeconds(seconds);
   }, [pattern]);
 
   // Start the breathing session
   const startSession = (initialStepIndex = 0) => {
-    if (!pattern || !pattern.steps || pattern.steps.length === 0) return;
+    console.log("Starting session with pattern:", pattern?.name);
+    
+    if (!pattern || !pattern.steps || pattern.steps.length === 0) {
+      console.error("Cannot start session: No pattern or steps provided");
+      return;
+    }
     
     setStepIndex(initialStepIndex);
     setIsActive(true);
@@ -82,13 +94,18 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
     // Initialize with the first step
     const firstStep = pattern.steps[initialStepIndex];
     if (firstStep && firstStep.step) {
+      console.log("First step:", firstStep.step);
+      
       setCurrentStep({
         action: "inhale",
         seconds: firstStep.step.inhaleSeconds,
         method: firstStep.step.inhaleMethod,
         cue: firstStep.step.cueText
       });
+      
       setSecondsRemaining(firstStep.step.inhaleSeconds);
+    } else {
+      console.error("First step is invalid:", firstStep);
     }
     
     // Log this session if we have a user ID (simplified for now)
@@ -120,16 +137,19 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
           // Time to move to the next phase or step
           const currentPatternStep = pattern.steps[stepIndex];
           if (!currentPatternStep || !currentPatternStep.step) {
+            console.error("Invalid current pattern step", currentPatternStep);
             stopSession();
             return 0;
           }
           
           const step = currentPatternStep.step;
+          console.log("Current step action:", currentStep?.action, "Next:", step);
           
           // Determine the next action based on the current action
           if (currentStep?.action === "inhale") {
             // After inhale comes hold (if any)
             if (step.holdInSeconds > 0) {
+              console.log("Moving to HOLD phase, duration:", step.holdInSeconds);
               setCurrentStep({
                 action: "hold",
                 seconds: step.holdInSeconds,
@@ -138,6 +158,7 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
               return step.holdInSeconds;
             } else {
               // Skip to exhale if no hold
+              console.log("Moving to EXHALE phase, duration:", step.exhaleSeconds);
               setCurrentStep({
                 action: "exhale",
                 seconds: step.exhaleSeconds,
@@ -150,6 +171,7 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
           
           else if (currentStep?.action === "hold") {
             // After hold comes exhale
+            console.log("Moving to EXHALE phase, duration:", step.exhaleSeconds);
             setCurrentStep({
               action: "exhale",
               seconds: step.exhaleSeconds,
@@ -162,6 +184,7 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
           else if (currentStep?.action === "exhale") {
             // After exhale comes hold-out (if any)
             if (step.holdOutSeconds > 0) {
+              console.log("Moving to HOLD-OUT phase, duration:", step.holdOutSeconds);
               setCurrentStep({
                 action: "hold-out",
                 seconds: step.holdOutSeconds,
@@ -173,6 +196,7 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
               const nextStepIndex = stepIndex + 1;
               if (nextStepIndex < pattern.steps.length) {
                 // Move to next step
+                console.log("Moving to next step, index:", nextStepIndex);
                 setStepIndex(nextStepIndex);
                 const nextStep = pattern.steps[nextStepIndex].step;
                 if (nextStep) {
@@ -186,6 +210,7 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
                 }
               } else {
                 // End of pattern
+                console.log("End of pattern reached");
                 stopSession();
                 return 0;
               }
@@ -197,6 +222,7 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
             const nextStepIndex = stepIndex + 1;
             if (nextStepIndex < pattern.steps.length) {
               // Move to next step
+              console.log("Moving to next step after hold-out, index:", nextStepIndex);
               setStepIndex(nextStepIndex);
               const nextStep = pattern.steps[nextStepIndex].step;
               if (nextStep) {
@@ -210,6 +236,7 @@ export function useBreathingSession(pattern?: ExpandedPattern) {
               }
             } else {
               // End of pattern
+              console.log("End of pattern reached after hold-out");
               stopSession();
               return 0;
             }
